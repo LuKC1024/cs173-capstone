@@ -88,7 +88,8 @@
 
 ; example of evaluating +
 (test-->> eval
-          ; note the `()`, which denotes the empty environment
+          ; The first `()` denotes the empty environment
+          ; The second `()` denotes the empty stack
           (term [(+ (+ 1 2) (+ 3 4))
                  ()
                  ()])
@@ -97,11 +98,18 @@
                  ()]))
 ; example of function calls
 (test-->> eval
-          ; note the `()`, which denotes the empty environment
           (term [(((lambda (x) (lambda (y) (+ x y))) 2) 3)
                  ()
                  ()])
           (term [5
+                 ()
+                 ()]))
+; lexical scope
+(test-->> eval
+          (term [((lambda (x) (+ ((lambda (x) x) 3) x)) 1)
+                 ()
+                 ()])
+          (term [4
                  ()
                  ()]))
 (test-results)
