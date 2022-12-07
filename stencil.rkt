@@ -20,13 +20,13 @@ You can find them by searching "HINT".
      (function)]
   ; expression
   [e ::=
-     ; variable reference
+     ; variable
      x
      ; value
      v
      ; addition
      (+ e ...)
-     ; function call
+     ; application
      (e e ...)
      ; lambda
      (lambda (x ...) e)]
@@ -84,7 +84,7 @@ You can find them by searching "HINT".
    ; +
    (--> [(in-hole C (+ number ...)) σ s]
         [(in-hole C ,(apply + (term (number ...)))) σ s])
-   ; lookup
+   ; variable
    (--> [(in-hole C x) σ s]
         [(in-hole C (lookup σ x)) σ s])
    ; lambda
