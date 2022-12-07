@@ -1,6 +1,18 @@
 #lang racket
 (require redex)
 
+#|
+You must keep the definition of observable unchanged.
+You must keep all existing kinds of expressions,
+but you are welcomed to add new kinds, such as `eq?`.
+You must keep the `run` tests unchanged.
+
+You are welcomed to change everything else.
+
+Some hints are provided in this file.
+You can find them by searching "HINT".
+|#
+
 (define-language SMoLest
   ; observable
   [o ::=
@@ -19,7 +31,6 @@
      ; lambda
      (lambda (x ...) e)]
   ; value
-  ; TODO: You are welcomed to change the definition of values
   [v ::=
      number
      (lambda (x ...) e σ)]
@@ -69,8 +80,7 @@
 (define eval
   (reduction-relation
    SMoLest
-   ; TODO: You are welcomed to change the domain and other parts of this file accordingly
-   #:domain (e σ s)
+   #:domain [e σ s]
    ; +
    (--> [(in-hole C (+ number ...)) σ s]
         [(in-hole C ,(apply + (term (number ...)))) σ s])
@@ -78,7 +88,6 @@
    (--> [(in-hole C x) σ s]
         [(in-hole C (lookup σ x)) σ s])
    ; lambda
-   ; TODO: You are welcomed to change the lambda case
    (--> [(in-hole C (lambda (x ...) e)) σ s]
         [(in-hole C (lambda (x ...) e σ)) σ s])
    ; application
@@ -87,13 +96,7 @@
    ; return
    (--> [v σ_1 (C σ_2 s)]
         [(in-hole C v) σ_2 s])
-   ; TODO: Part 1. implement `eq?`
-   ; TODO: Part 1. implement `if`
    ))
-
-; TODO: Part 2. implement `let`
-; TODO: Part 2. implement `let*`
-; TODO: Part 2. implement `begin`
 
 ; example of evaluating +
 (test-->> eval
@@ -105,8 +108,9 @@
           (term [10
                  ()
                  ()]))
-; You can use `stepper` to debug programs
-; TODO: try uncomment the following expression or run it in the REPL
+; HINT: You are welcomed to add more tests here.
+; HINT: try uncomment the following expression or run it in the REPL.
+;   You might find `stepper` a very useful debugger
 #;
 (stepper eval
          ; The first `()` denotes the empty environment
@@ -120,44 +124,43 @@
   observe : v -> o
   [(observe number)
    number]
-  ;; TODO: you are welcomed to change the lambda case
   [(observe (lambda (x ...) e σ))
    (function)])
 
-(define-metafunction SMoLest
-  run : e -> o
-  [(run e)
-   (observe v)
-   (where ((v σ s)) ,(apply-reduction-relation* eval (term [e () ()])))])
+(define (run e)
+  (define results (apply-reduction-relation* eval (term [,e () ()])))
+  (if ((redex-match? SMoLest ((v σ s a))) results)
+      (first (first results))
+      (error 'run "For details, run\n(stepper eval (term [~a () ()]))" e)))
 
-(test-equal (term (run (+ (+ 1 2) (+ 3 4))))
+(test-equal (run (term (+ (+ 1 2) (+ 3 4))))
             (term 10))
-(test-equal (term (run (((lambda (x) (lambda (y) (+ x y))) 2) 3)))
+(test-equal (run (term (((lambda (x) (lambda (y) (+ x y))) 2) 3)))
             (term 5))
-(test-equal (term (run ((lambda (x) (+ ((lambda (x) x) 3) x)) 1)))
+(test-equal (run (term ((lambda (x) (+ ((lambda (x) x) 3) x)) 1)))
             (term 4))
-; TODO: uncomment and make sure your `eq?` works as we expected
+; HINT: uncomment and make sure your `eq?` works as we expected
 #|
-(test-equal (term (run (eq? (lambda (x) x)
+(test-equal (run (term (eq? (lambda (x) x)
                             (lambda (x) x))
                        ))
             (term #f))
-(test-equal (term (run (let ([f (lambda (x) x)])
+(test-equal (run (term (let ([f (lambda (x) x)])
                          (eq? f f))
                        ))
             (term #t))
-(test-equal (term (run (let* ([f (lambda (x) x)]
+(test-equal (run (term (let* ([f (lambda (x) x)]
                               [g f])
                          (eq? ((lambda () g)) f))
                        ))
             (term #t))
 |#
-; TODO: uncomment and make sure your `if` works as we expected
+; HINT: uncomment and make sure your `if` works as we expected
 #|
-(test-equal (term (run (if (eq? 2 3))
+(test-equal (run (term (if (eq? 2 3)
                            ((lambda (x) (x x)) (lambda (x) (x x)))
-                           42))
+                           42)))
             (term 42))
 |#
-;; TODO: You are welcomed to add more tests here.
+; HINT: You are welcomed to add more tests here.
 (test-results)
