@@ -98,7 +98,7 @@ You can find them by searching "HINT".
         [(in-hole C v) σ_2 s])
    ))
 
-; example of evaluating +
+; an example of evaluating +
 (test-->> eval
           ; The first `()` denotes the empty environment
           ; The second `()` denotes the empty stack
@@ -129,7 +129,7 @@ You can find them by searching "HINT".
 
 (define (run e)
   (define results (apply-reduction-relation* eval (term [,e () ()])))
-  (if ((redex-match? SMoLest ((v σ s a))) results)
+  (if ((redex-match? SMoLest ((v σ s))) results)
       (first (first results))
       (error 'run "For details, run\n(stepper eval (term [~a () ()]))" e)))
 
